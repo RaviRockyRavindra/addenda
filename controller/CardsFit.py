@@ -30,9 +30,8 @@ class Deck(object):
     def display(self):
         for c in self.cards:
             c.display()
-
+            
     # fisher yate algo for card shuffiling
-
     def shuffle_cards(self):
         local_array=self.cards
         for i in range(len(local_array)-1,0,-1):
