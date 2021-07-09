@@ -7,14 +7,89 @@ password = 'root'
 database = 'Addenda'
 
 
+def getValueFromCard(cardlabel):
+    cardlable = cardlabel.split(" ")
+    number = cardlable[0]
 
-def createSession(session,cardLable1,cardLable2,playerscore1,playerscore2):
+    if number == "Ace":
+        number1 = 1
+    
+    elif number == "Jack":
+        number1 = 11
+    
+    elif number == "Queen":
+        number1 = 12
+    
+    elif number == "King":
+        number1 = 13
+    
+    else:
+        number1 = int(number)
+
+
+    return number1        
+
+
+def getGameScore(session):
+
+    try:
+        sql = "Select gamescore from game where sessionId=%s"
+        val = (session,)
+        myConnection = connect()
+        cursor = myConnection.cursor()
+        cursor.execute(sql,val)
+        data = cursor.fetchone()
+        number = data[0]
+        print(number)
+
+        return number
+            
+
+    except MySQLdb.MySQLError as err:
+        print("issue during execution",str(err))
+        return False
+
+
+def updateEachScore(score,session,identity):
+
+    try:
+        # value=getValueFromCard(cardlabel
+
+        gamescorevalue = getGameScore(session)
+        score = int(gamescorevalue) + int(score)
+        if score >= 17 and identity == "player1":
+            resultIdentity="player1"
+            sql = "UPDATE game SET gamescore=%s,exceedwinner=%s WHERE sessionId = %s"
+            val = (score,resultIdentity,session)
+        elif score >= 17 and identity == "player2":
+            resultIdentity="player2"
+            sql = "UPDATE game SET gamescore=%s,exceedwinner=%s WHERE sessionId = %s"
+            val = (score,resultIdentity,session)
+        else:
+            sql = "UPDATE game SET gamescore=%s WHERE sessionId = %s"
+            
+            val = (score,session)
+
+        myConnection = connect()
+        cursor = myConnection.cursor()
+        cursor.execute(sql,val)
+        print("inside the updateEachScore")
+        cursor.execute(sql,val)
+        myConnection.commit()
+        return True
+
+    except MySQLdb.MySQLError as err:
+        print("issue during execution",str(err))
+
+
+def createSession(session,cardLable1,cardLable2,playerscore1,playerscore2,gamescore):
     try:
         print("createSession")
         cardlabel11="NULL"
         cardlabel22="NULL"
-        sql = "Insert INTO game(sessionId,CardLabel1,CardLable2,playerscore1,playerscore2) VALUE(%s,%s,%s,%s,%s)"
-        val = (session,cardLable1,cardLable2,playerscore1,playerscore2)
+        sql = "Insert INTO game(sessionId,CardLabel1,CardLable2,playerscore1,playerscore2,gamescore) VALUE(%s,%s,%s,%s,%s,%s)"
+        print(gamescore,"updating now---")
+        val = (session,cardLable1,cardLable2,playerscore1,playerscore2,gamescore)
         myConnection = connect()
         cursor = myConnection.cursor()
         cursor.execute(sql,val)
@@ -36,6 +111,8 @@ def updateSessionplayer1(session,CardLabel11):
         print("inside the updateSession")
         cursor.execute(sql,val)
         myConnection.commit()
+        value=getValueFromCard(CardLabel11)
+        updateEachScore(value,session,"player1")
         return True
 
     except MySQLdb.MySQLError as err:
@@ -52,10 +129,12 @@ def updateSessionplayer2(session,CardLabel22):
         print("inside the updateSession")
         cursor.execute(sql,val)
         myConnection.commit()
+        value=getValueFromCard(CardLabel22)
+        updateEachScore(value,session,"player2") 
         return True
 
     except MySQLdb.MySQLError as err:
-        print("issue during execution",str(err))        
+        print("issue during execution",str(err))                
 
 def update1Session(CardLabel1,session):
 
@@ -68,6 +147,8 @@ def update1Session(CardLabel1,session):
         print("inside the updateSession")
         cursor.execute(sql,val)
         myConnection.commit()
+        value=getValueFromCard(CardLabel1)
+        updateEachScore(value,session,"player1")
         return True
 
     except MySQLdb.MySQLError as err:
@@ -84,6 +165,8 @@ def update1Session2(session,CardLabel2):
         print("inside the updateSession")
         cursor.execute(sql,val)
         myConnection.commit()
+        value=getValueFromCard(CardLabel2)
+        updateEachScore(value,session,"player2")
         return True
 
     except MySQLdb.MySQLError as err:
@@ -149,6 +232,7 @@ def updatedScoretoplayer1(session,score):
         myConnection.commit()
         return True
 
+
     except MySQLdb.MySQLError as err:
         print("issue during execution",str(err))
 
@@ -165,10 +249,10 @@ def getRecords(session):
         print(data[3])
         print(data[6])
         print(data[7])
+        print(data[8])
 
         return data
             
-
     except MySQLdb.MySQLError as err:
         print("issue during execution",str(err))
         return False
@@ -183,6 +267,7 @@ def updatedScoretoplayer1(session,score):
         print("inside the updateSession")
         cursor.execute(sql,val)
         myConnection.commit()
+        updateEachScore(score,session,"player1")
         return True
 
     except MySQLdb.MySQLError as err:
@@ -198,11 +283,51 @@ def updatedScoretoplayer2(session,score):
         print("inside the updateSession")
         cursor.execute(sql,val)
         myConnection.commit()
+        updateEachScore(score,session,"player2")
         return True
 
     except MySQLdb.MySQLError as err:
         print("issue during execution",str(err))
 
+
+# creating for updating playerscore1,playerscore2
+# ------begin
+            
+
+def updateScorePlayer1(session,score):
+    try:
+        sql = "UPDATE game SET playerscore1=%s WHERE sessionId = %s"
+        val = (score,session)
+        myConnection = connect()
+        cursor = myConnection.cursor()
+        cursor.execute(sql,val)
+        print("inside the updateSession")
+        cursor.execute(sql,val)
+        myConnection.commit()
+         
+        return True
+
+    except MySQLdb.MySQLError as err:
+        print("issue during execution",str(err))
+
+
+def updateScorePlayer2(session,score):
+    try:
+        sql = "UPDATE game SET playerscore2=%s WHERE sessionId = %s"
+        val = (score,session)
+        myConnection = connect()
+        cursor = myConnection.cursor()
+        cursor.execute(sql,val)
+        print("inside the updateSession")
+        cursor.execute(sql,val)
+        myConnection.commit()
+        return True
+
+    except MySQLdb.MySQLError as err:
+        print("issue during execution",str(err))
+
+
+#---end
 
 def getPlayer1Score(session):
 
@@ -213,7 +338,7 @@ def getPlayer1Score(session):
         cursor = myConnection.cursor()
         cursor.execute(sql,val)
         data = cursor.fetchone()
-        print(data)
+        print("data",data)
         number2=0
         number1=0
         if data[0] != "null":
@@ -249,8 +374,8 @@ def getPlayer1Score(session):
                     number2=numberT   
 
         finalcount = int(number2) + int (number1)
+        updateScorePlayer1(session,finalcount)
         print(finalcount)
-        updatedScoretoplayer1(session,finalcount)
         return finalcount
             
 
@@ -302,7 +427,8 @@ def getPlayer2Score(session):
                     number2=numberT
 
         finalcount = int(number2) + int (number1) 
-        updatedScoretoplayer2(session,finalcount)
+        ## upadting the value to scores column player2
+        updateScorePlayer2(session,finalcount)
         print(finalcount)
         return finalcount
 
@@ -369,21 +495,3 @@ def remove_user(username):
     except MySQLdb.MySQLError as err:
         print("issue during execution",str(err))
         return False
-
-
-def select_user_key(profilename):
-    try:
-        sql = "Select public_key from user_keys where profile_name = %s"
-        val = (profilename,)
-        myConnection = connect()
-        cursor = myConnection.cursor()
-        cursor.execute(sql,val)
-        public_key_from_db = cursor.fetchall()
-        myConnection.commit()
-        return str(public_key_from_db)
-
-    except MySQLdb.MySQLError as err:
-        print("issue during execution",str(err))
-        return None
-
-getWinner(1047)

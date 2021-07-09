@@ -13,7 +13,7 @@ from tkinter import *
 import tkinter as tk
 import os
 count = 0
-sys.path.append("Y:\projects\Addenda-game\controller")
+sys.path.append("Z:\projects\Addenda-game\controller")
 
 import client
 from CardsFit import Card
@@ -26,6 +26,7 @@ widgets_list=[]
 globalGamePlayerSocket = None
 windowTk = tk.Tk()
 intialWindiowTk = tk.Tk()
+# communicationWindow = tk.Tk()
 # chatWindowtk=tk.Tk()
 congowidget = tk.Label(windowTk)
 infosubmitButton = tk.Button(intialWindiowTk,text ="Submit button")
@@ -35,6 +36,7 @@ activeConnections = []
 globalUserName = " "
 GlobalGameDealer= False
 cardDealerButton = tk.Button(windowTk,text="Distribute")
+
 globalSessionId = 0
 globalIdentityGame = " "
 tkvar = StringVar()
@@ -44,6 +46,10 @@ oppsitionCardsDisplayGrid = tk.Label()
 tkvar.set('Create')
 popupMenu = OptionMenu(intialWindiowTk, tkvar, *choices)
 inputNamePlayer1 = tk.Entry(intialWindiowTk)
+messageinput = tk.Entry(windowTk)
+messagedisplay = tk.Label(windowTk,text="Incoming message display here")
+
+messageSubmit= tk.Button(windowTk,text="SubmitMessage")
 
 # inputMessage = tk.Entry(chatWindowtk)
 # sendMessage = tk.Label(chatWindowtk)
@@ -56,14 +62,14 @@ inputNamePlayer1 = tk.Entry(intialWindiowTk)
 shuffleButton = tk.Button(text ="Shuffle Cards")
 
 cutCardsButton = tk.Button(text ="Cut Cards")
-image = PIL.Image.open("Y:\projects\Addenda-game\Card Back 4.png")
+image = PIL.Image.open("Z:\projects\Addenda-game\Card Back 4.png")
 photo = PIL.ImageTk.PhotoImage(image)
 allCardsLabel = tk.Label()
 cutCardsLabel = tk.Label()
 userName__inputsubmit = " " 
 playername1= "player1"
 playername2= "player2"
-image_dir="Y:\\projects\\Addenda-game\\res\\images\\"
+image_dir="Z:\\projects\\Addenda-game\\res\\images\\"
 
 addendaLabel = tk.Label(text=serverMessageGlobal)
 # 
@@ -82,8 +88,12 @@ windowTk.config(bg='green')
 windowTk.title("cards windows addenda")
 intialWindiowTk.config(bg='green')
 intialWindiowTk.title("info window addenda")
+# communicationWindow.config(bg='green')
+# communicationWindow.title("communication window addenda")
 # chatWindowtk.config(bg='green')
 # chatWindowtk.title("communication")
+
+
 
 
 # def getAllCards_open():
@@ -228,7 +238,17 @@ def windowTkinterRefresh():
 
 def intialwindowTkinterRefresh():
     intialWindiowTk.update()
-    intialWindiowTk.after(1500,intialwindowTkinterRefresh)    
+    intialWindiowTk.after(1500,intialwindowTkinterRefresh)   
+
+# def communicationwindowTkinterrefresh():
+#     communicationWindow.update()
+#     communicationWindow.after(1500,communicationwindowTkinterrefresh)  
+
+def sendMessageToTarget():
+    val=messageinput.get()
+    print(val,"--message inside send message function")
+    client.sendMessage(globalGamePlayerSocket,globalSessionId,val,globalIdentityGame)
+              
 
 def username__command(sessionId):
     global userName__inputsubmit, playername1, playername2
@@ -272,16 +292,17 @@ def username__command(sessionId):
     cutCardsButton.config(command=cut_button_clicked)
     cutCardsButton.grid(row=0,column=1)
 
-    # sendButton.config(command=sendMessages(inputMessage.get()))    
-    
-    # inputMessage.grid(row=0,column=2,padx=5)
-    # sendMessage.grid(row=0,column=4,padx=5)
-    # sendButton.grid(row=0,column=6,padx=5)
+    messagedisplay.grid(row=11,column=1)
+    messageinput.grid(row=10,column=1)
+    print("here message submit defines -------------------")
+    messageSubmit.config(command=sendMessageToTarget)
+    messageSubmit.grid(row=10,column=2)
 
     windowTkinterRefresh()
-    # chatWindowtk.title(globalIdentityGame)
-    # chatWindowtk.mainloop()
+    # communicationwindowTkinterrefresh()
+    # communicationWindow.mainloop()
     windowTk.mainloop()
+    
 
 def shuffle_button_clicked():
     if cutCardsLabel:
@@ -352,8 +373,11 @@ def setMycards(data):
     global congowidget
     oppCardsList = []
     congostatus = "Load"
+    exceedwinner=data[8]
     if data[6] =="player1" or data[6] == "player2":
         congostatus = "lost the game"
+        
+ 
     print("data",data)
     if globalIdentityGame == "player1":
         print("on screen 1 data received")
@@ -361,11 +385,23 @@ def setMycards(data):
         myCardsList.append(data[2])
         oppCardsList.append(data[1])
         oppCardsList.append(data[3])
-        scorewidget = tk.Label(windowTk,text="Score 1 : "+data[4])
+        scorewidget = tk.Label(windowTk,text="Score 1: "+data[4])
         scorewidget.grid(row=0,column=4)
+
+        gameScorewidget = tk.Label(windowTk,text="GameScore: "+data[7])
+        gameScorewidget.grid(row=0,column=6)
         
         if data[6] == "player1":
             congostatus = "Congrats"
+
+        if exceedwinner == "player1":
+            congostatus = "you lost the game"
+
+        elif exceedwinner == "player1":
+            congostatus = "Congrats won the game"       
+        
+        elif exceedwinner == " ":
+            congostatus = "load"
 
         congowidget.config(text=congostatus)
         congowidget.grid(row=0,column=8)
@@ -379,9 +415,21 @@ def setMycards(data):
 
         scorewidget = tk.Label(windowTk,text="Score 2: "+data[5])
         scorewidget.grid(row=0,column=6)
+ 
+        gameScorewidget = tk.Label(windowTk,text="GameScore: "+data[7])
+        gameScorewidget.grid(row=0,column=7)
         
         if data[6] == "player2":
             congostatus = "Congrats"
+
+        if exceedwinner == "player2":
+            congostatus = "you lost the game"   
+        
+        elif exceedwinner == "player1":
+            congostatus = "Congrats won the game"
+
+        elif exceedwinner == " ":
+            congostatus = "load"        
 
         congowidget.config(text=congostatus)
         congowidget.grid(row=0,column=8)
@@ -443,7 +491,8 @@ def cardClicked(playeridentity,session,pos):
     pos = convertLabeltoValue(pos)
     print("getVlaue is ",pos)
     client.cardHit(globalGamePlayerSocket,playeridentity,pos,session,cardLabel)
-    
+   
+
 def dealer():
     global cardDealerButton
     cardDealerButton.config(text="Serve Cards")
@@ -581,8 +630,9 @@ def sessionButtonsClicked(sessionId,name):
         username__command(sessionId)
 
 def popudisplay(value):
-    global sendMessage
-    sendMessage.config(text=value)
+    global messagedisplay
+    print("inside the popup display", value)
+    messagedisplay.config(text=value)
 
 
 def intialButtonClicked():
@@ -615,8 +665,7 @@ def intialButtonClicked():
                 activeConnections.append(one)
                 Button(intialWindiowTk,text=one,command=lambda: sessionButtonsClicked(one,val2)).pack()
             
-def sendMessages(value):
-    client.sendMessage(globalGamePlayerSocket,globalSessionId,value,globalIdentityGame)
+
 
 
 def intialWindow(socket):
@@ -642,9 +691,4 @@ def intialWindow(socket):
 
     # intialwindowTkinterRefresh()
     intialWindiowTk.mainloop()
-                      
- 
-
-
     
-

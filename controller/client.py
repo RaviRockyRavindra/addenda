@@ -14,8 +14,8 @@ import time
 from tkinter import *
 import tkinter as tk
 sys.path.append(".")
-sys.path.append("..\\View")
-sys.path.append("Y:\projects\Addenda-game\model")
+sys.path.append("Z:\projects\Addenda-game\View")
+sys.path.append("Z:\projects\Addenda-game\model")
 import ui as uii
 from UserSession import UserSession
 from GameSession import GameSession
@@ -125,6 +125,8 @@ def player_opnion(username):
 def cardHit(socket,playerIdentity,score,session,cardLabel):
     populateString = "cardhit/"+ str(playerIdentity) +"/"+ str(score) +"/"+ str(session) + "/" + str(cardLabel)
     print("cardHit pre data",populateString)
+    # if score >= 17 and playerIdentity == "player1":
+    #    uii.displayResult()
     socket.send(populateString.encode())    
 
 
@@ -141,9 +143,10 @@ def pullMessage(serverSocket):
                 uii.serveCards()
             
             if message.find("messageOUT") != -1:
-                print(message)
+                print(message,"messageOUT client")
                 message = message.split("/")
-                uii.popudisplay()
+                message = message[1]
+                uii.popudisplay(message)
 
             if message.find("gamesessionrefresh") != -1:
                 pplist.clear()
@@ -158,6 +161,8 @@ def pullMessage(serverSocket):
                 score1=obj[5]
                 score2=obj[6]
                 winner=obj[7]
+                gamescore=obj[8]
+                exceedwinner=obj[9]
 
                 pplist.append(player1Card)
                 pplist.append(player2card)
@@ -166,6 +171,11 @@ def pullMessage(serverSocket):
                 pplist.append(score1)
                 pplist.append(score2)
                 pplist.append(winner)
+                pplist.append(gamescore)
+                pplist.append(exceedwinner)
+
+
+                
                 uii.setMycards(pplist)
 
         except Exception as e:
@@ -174,7 +184,8 @@ def pullMessage(serverSocket):
 
 def sendMessage(socket,session,value,idenity):
     socket = socket
-    prepareMessag= "messagein/"+ str(session) + "/" + value + "/" + idenity 
+    print("inside  client send message ")
+    prepareMessag= "messagein /"+ str(session) + "/" + value + "/" + idenity 
     socket.send(prepareMessag.encode())
 
 

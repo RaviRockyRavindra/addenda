@@ -12,7 +12,7 @@ import pickle
 import sys
 import threading
 from tkinter.constants import NO
-sys.path.append("Y:\projects\Addenda-game\model")
+sys.path.append("Z:\projects\Addenda-game\model")
 sys.path.append(".")
 from UserSession import UserSession
 from GameSession import GameSession as gameSession
@@ -139,25 +139,26 @@ def client_connection(clientSocket, client_address):
                                      targetData = "distributeCards"
                                      player1socket.send(targetData.encode())  
 
-        #     elif clientMessage.find("messagein") != -1:
-        #             t_socket=None
-        #             clientMessage = clientMessage.split("/")
-        #             session_II = clientMessage[1]
-        #             value_H = clientMessage[2]
-        #             identity_H = clientMessage[3]
-        #             for one in sessions:
-        #                     print(sessions)
-        #                     if (one.getSession() == session_II and identity_H == "player1"):
-        #                             t_socket = one.getPlayer2Socket()
-        #                             print("in message socket ",t_socket)
-        #                             v = "messageOUT/"+value_H
-        #                             t_socket.send(v.encode())
+            elif clientMessage.find("messagein") != -1:
+                    t_socket=None
+                    clientMessage = clientMessage.split("/")
+                    session_II = clientMessage[1]
+                    value_H = clientMessage[2]
+                    identity_H = clientMessage[3]
 
-        #                     elif (one.getSession() == session_II and identity_H == "player2"):
-        #                             t_socket = one.getPlayer1Socket()
-        #                             print("in message socket ", one.getPlayer2Socket())
-        #                             v = "messageOUT/"+value_H
-        #                             t_socket.send(v.encode())
+                    for one in sessions:
+                            print(sessions)
+                            if (one.getSession() == session_II and identity_H == "player1"):
+                                    t_socket = one.getPlayer2Socket()
+                                    print("in message socket ",t_socket)
+                                    v = "messageOUT /"+value_H
+                                    t_socket.send(v.encode())
+
+                            elif (one.getSession() == session_II and identity_H == "player2"):
+                                    t_socket = one.getPlayer1Socket()
+                                    print("in message socket ", one.getPlayer2Socket())
+                                    v = "messageOUT /"+value_H
+                                    t_socket.send(v.encode())
 
 
 
@@ -190,7 +191,7 @@ def client_connection(clientSocket, client_address):
                                         scoreupdated1 = DataBaseClass.getPlayer1Score(h_sessionId)
                                 
                         else:
-                                exe=DataBaseClass.createSession(h_sessionId,cardLabel,"null",int(g_score),0)        
+                                exe=DataBaseClass.createSession(h_sessionId,cardLabel,"null",int(g_score),0,int(g_score))        
                                 player1Turn=False
                                 dataSocket=DataBaseClass.getRecords(h_sessionId)
                                 scoreupdated1 = DataBaseClass.getPlayer1Score(h_sessionId)
@@ -212,7 +213,7 @@ def client_connection(clientSocket, client_address):
                                        dataSocket=DataBaseClass.getRecords(h_sessionId)
                                        scoreupdated2 = DataBaseClass.getPlayer2Score(h_sessionId)
                         else:
-                                exe=DataBaseClass.createSession(h_sessionId,"null",cardLabel,0,int(g_score))   
+                                exe=DataBaseClass.createSession(h_sessionId,"null",cardLabel,0,int(g_score),int(g_score))   
                                 player2Turn=False
                                 dataSocket=DataBaseClass.getRecords(h_sessionId)
                                 scoreupdated2 = DataBaseClass.getPlayer2Score(h_sessionId)
@@ -221,7 +222,7 @@ def client_connection(clientSocket, client_address):
                      winnerstatus=DataBaseClass.getWinner(h_sessionId)
                      if exe:
                              
-                             datastring = "gamesessionrefresh/"+str(dataSocket[2])+"/"+str(dataSocket[3])+"/"+str(dataSocket[6]) + "/"+str(dataSocket[7]) + "/" + str(scoreupdated1) + "/" + str(scoreupdated2) + "/" + str(winnerstatus)
+                             datastring = "gamesessionrefresh/"+str(dataSocket[2])+"/"+str(dataSocket[3])+"/"+str(dataSocket[6]) + "/"+str(dataSocket[7]) + "/" + str(scoreupdated1) + "/" + str(scoreupdated2) + "/" + str(winnerstatus) + "/" + str(dataSocket[8]) + "/" + str(dataSocket[9])
                              print(datastring)
                              for getses in sessions:
                                      print("sessions",getses)
